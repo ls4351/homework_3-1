@@ -20,6 +20,7 @@ def fetch_managed_accounts():
 
         def managedAccounts(self, accountsList):
             self.managed_accounts = [i for i in accountsList.split(",") if i]
+            self.disconnect()
 
     app = ibkr_app()
 
@@ -65,6 +66,23 @@ def req_historical_data(tickerId, contract, endDateTime, durationStr,
             # assign the dataframe to self.historical_data.
             print(reqId, bar)
 
+        def historicalDataEnd(self, reqId: int, start: str, end: str):
+            self.disconnect()
+
+        # EWrapper.nextValidID callback is commonly used to indicate that the connection is completed
+        # and other messages can be sent from the API client to TWS.
+        # There is the possibility that function calls (e.g. reqHistoricalData() ) made prior
+        # to this time could be dropped by TWS
+        def nextValidId(self, orderId: int):
+            self.start()
+
+        def start(self):
+            print('Triggering historical data request...')
+            self.reqHistoricalData(tickerId, contract, endDateTime, durationStr,
+                                   barSizeSetting, whatToShow, useRTH,
+                                   True, False, [])
+            print('Finished triggering historical data request')
+
     app = ibkr_app()
 
     app.connect('127.0.0.1', 7497, 10645)
@@ -85,9 +103,6 @@ def req_historical_data(tickerId, contract, endDateTime, durationStr,
     eurusd_contract.secType = 'CASH'
     eurusd_contract.exchange = 'IDEALPRO'
     eurusd_contract.currency = 'USD'
-
-    app.reqHistoricalData(tickerId, contract, endDateTime, durationStr,
-                          barSizeSetting, whatToShow, useRTH)
 
     # As long as the historical data instance variable has no rows, wait
     #  until you receive it from the socket:
