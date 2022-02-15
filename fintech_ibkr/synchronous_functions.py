@@ -5,12 +5,12 @@ from ibapi.contract import Contract
 import threading
 import time
 
-def fetch_managed_accounts():
 
+def fetch_managed_accounts():
     class ibkr_app(EWrapper, EClient):
         def __init__(self):
             EClient.__init__(self, self)
-            self.error_messages = pd.DataFrame(columns = [
+            self.error_messages = pd.DataFrame(columns=[
                 'reqId', 'errorCode', 'errorString'
             ])
             self.managed_accounts = []
@@ -46,11 +46,10 @@ def fetch_managed_accounts():
 
 def req_historical_data(tickerId, contract, endDateTime, durationStr,
                         barSizeSetting, whatToShow, useRTH):
-
     class ibkr_app(EWrapper, EClient):
         def __init__(self):
             EClient.__init__(self, self)
-            self.error_messages = pd.DataFrame(columns = [
+            self.error_messages = pd.DataFrame(columns=[
                 'reqId', 'errorCode', 'errorString'
             ])
             self.historical_data = pd.DataFrame()

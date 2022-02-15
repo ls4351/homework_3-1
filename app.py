@@ -18,10 +18,10 @@ app.layout = html.Div([
     html.P(
         children=[
             "See the various currency pairs here: ",
-                  html.A(
-                      "currency pairs",
-                      href='https://www.interactivebrokers.com/en/index.php?f=2222&exch=ibfxpro&showcategories=FX'
-                  )
+            html.A(
+                "currency pairs",
+                href='https://www.interactivebrokers.com/en/index.php?f=2222&exch=ibfxpro&showcategories=FX'
+            )
         ]
     ),
 
@@ -66,27 +66,28 @@ app.layout = html.Div([
 
 ])
 
+
 # Callback for what to do when submit-button is pressed
 @app.callback(
-    [ # there's more than one output here, so you have to use square brackets to pass it in as an array.
-    Output(component_id='currency-output', component_property='children'),
-    Output(component_id='candlestick-graph', component_property='figure')
+    [  # there's more than one output here, so you have to use square brackets to pass it in as an array.
+        Output(component_id='currency-output', component_property='children'),
+        Output(component_id='candlestick-graph', component_property='figure')
     ],
-    Input('submit-button', 'n_clicks'), # The callback function will fire when the submit button's n_clicks changes
+    Input('submit-button', 'n_clicks'),  # The callback function will fire when the submit button's n_clicks changes
     # The currency input's value is passed in as a "State" because if the user is typing and the value changes, then
     #   the callback function won't run. But the callback does run because the submit button was pressed, then the value
     #   of 'currency-input' at the time the button was pressed DOES get passed in.
     State('currency-input', 'value')
 )
-def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we only include it for the dependency.
+def update_candlestick_graph(n_clicks, value):  # n_clicks doesn't get used, we only include it for the dependency.
 
     # First things first -- what currency pair history do you want to fetch?
     # Define it as a contract object!
     contract = Contract()
-    contract.symbol   = # set this to the FIRST currency (before the ".")
-    contract.secType  = 'CASH'
-    contract.exchange = 'IDEALPRO' # 'IDEALPRO' is the currency exchange.
-    contract.currency = # set this to the FIRST currency (before the ".")
+    contract.symbol =  # set this to the FIRST currency (before the ".")
+    contract.secType = 'CASH'
+    contract.exchange = 'IDEALPRO'  # 'IDEALPRO' is the currency exchange.
+    contract.currency =  # set this to the FIRST currency (before the ".")
 
     # Wait until ibkr_app runs the query and saves the historical prices csv
     while not 'currency_pair_history.csv' in listdir():
@@ -101,13 +102,13 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
     # Don't forget -- you'll need to update the signature in this callback
     #   function to include your new vars!
     cph = req_historical_data(
-        tickerId = 1,
-        contract = contract,
-        endDateTime='',           # <-- make a reactive input
-        durationStr='30 D',       # <-- make a reactive input
+        tickerId=1,
+        contract=contract,
+        endDateTime='',  # <-- make a reactive input
+        durationStr='30 D',  # <-- make a reactive input
         barSizeSetting='1 hour',  # <-- make a reactive input
-        whatToShow='MIDPOINT',    # <-- make a reactive input
-        useRTH=True               # <-- make a reactive input
+        whatToShow='MIDPOINT',  # <-- make a reactive input
+        useRTH=True  # <-- make a reactive input
     )
 
     # Make the candlestick figure
@@ -129,6 +130,7 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
     # Return your updated text to currency-output, and the figure to candlestick-graph outputs
     return ('Submitted query for ' + value), fig
 
+
 # Callback for what to do when trade-button is pressed
 @app.callback(
     # We're going to output the result to trade-output
@@ -141,7 +143,7 @@ def update_candlestick_graph(n_clicks, value): # n_clicks doesn't get used, we o
     # We DON'T want to start executing trades just because n_clicks was initialized to 0!!!
     prevent_initial_call=True
 )
-def trade(n_clicks, action, trade_currency, trade_amt): # Still don't use n_clicks, but we need the dependency
+def trade(n_clicks, action, trade_currency, trade_amt):  # Still don't use n_clicks, but we need the dependency
 
     # Make the message that we want to send back to trade-output
     msg = action + ' ' + trade_amt + ' ' + trade_currency
@@ -158,6 +160,7 @@ def trade(n_clicks, action, trade_currency, trade_amt): # Still don't use n_clic
 
     # Return the message, which goes to the trade-output div's "children" attribute.
     return msg
+
 
 # Run it!
 if __name__ == '__main__':
