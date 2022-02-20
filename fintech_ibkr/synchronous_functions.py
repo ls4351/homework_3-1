@@ -97,6 +97,7 @@ def fetch_historical_data(contract, endDateTime='', durationStr='30 D',
     app = ibkr_app()
     app.connect(hostname, port, client_id)
     while not app.isConnected():
+        print("Waiting for connection...")
         time.sleep(0.01)
 
     def run_loop():
