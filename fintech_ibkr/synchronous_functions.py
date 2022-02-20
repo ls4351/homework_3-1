@@ -112,6 +112,8 @@ def fetch_historical_data(contract, endDateTime='', durationStr='30 D',
         tickerId, contract, endDateTime, durationStr, barSizeSetting,
         whatToShow, useRTH, formatDate=1, keepUpToDate=False, chartOptions=[])
     while app.historical_data_end != tickerId:
-        time.sleep(0.01)
+        time.sleep(1)
+        if not app.isConnected():
+            break
     app.disconnect()
     return app.historical_data
