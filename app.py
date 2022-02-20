@@ -24,7 +24,7 @@ app.layout = html.Div([
             "MIDPOINT",
             id='what-to-show'
         ),
-        style={'width': '365px'}
+        style={'width': '15%'}
     ),
     html.H4("Select value for endDateTime:"),
     html.Div(
@@ -33,7 +33,7 @@ app.layout = html.Div([
                    "fetch_historical_data. If any of the below is left empty, " + \
                    "the current present moment will be used.")
         ],
-        style={'width': '365px'}
+        style={'width': '15%'}
     ),
     html.Div(
         children=[
@@ -44,7 +44,7 @@ app.layout = html.Div([
                 ],
                 style={
                     'display': 'inline-block',
-                    'margin-right': '20px',
+                    'margin-right': '0.5%',
                 }
             ),
             html.Div(
@@ -54,7 +54,7 @@ app.layout = html.Div([
                 ],
                 style={
                     'display': 'inline-block',
-                    'padding-right': '5px'
+                    'padding-right': '0.5%'
                 }
             ),
             html.Div(
@@ -64,7 +64,7 @@ app.layout = html.Div([
                 ],
                 style={
                     'display': 'inline-block',
-                    'padding-right': '5px'
+                    'padding-right': '0.5%'
                 }
             ),
             html.Div(
@@ -76,7 +76,89 @@ app.layout = html.Div([
             )
         ]
     ),
-
+    html.H4("Select the duration:"),
+    html.Div(
+        children=[
+            html.Div(
+                children=[
+                    html.Label('Duration: '),
+                    dcc.Input(id='duration-value', value='30', type='number')
+                ],
+                style={
+                    'display': 'inline-block',
+                    'margin-right': '1%',
+                }
+            ),
+            html.Div(
+                dcc.Dropdown(
+                    options=[
+                        {'label': 'SECONDS', 'value': 'S'},
+                        {'label': 'DAYS', 'value': 'D'},
+                        {'label': 'WEEKS', 'value': 'W'},
+                        {'label': 'MONTHS', 'value': 'M'},
+                        {'label': 'YEARS', 'value': 'Y'},
+                    ],
+                    value="D",
+                    id='duration-category'
+                ),
+                style={
+                    'display': 'inline-block',
+                    'width': '10%'}
+            )
+        ]
+    ),
+    html.H4("Select the bar size:"),
+    html.Div(
+        children=[
+            html.Div(
+                children=[
+                    html.Label('Bar Size: '),
+                ],
+                style={
+                    'display': 'inline-block',
+                    'margin-right': '0.5%',
+                }
+            ),
+            html.Div(
+                dcc.Dropdown(
+                    ["1 sec", "5 secs", "15 secs", "30 secs", "1 min", "2 mins", "3 mins", "5 mins", "15 mins",
+                     "30 mins", "1 hour", "1 day"],
+                    "1 hour",
+                    id='bar-size'
+                ),
+                style={
+                    'display': 'inline-block',
+                    'width': '5%'}
+            )
+        ]
+    ),
+    html.H4("Use Regular Trading Hours:"),
+    html.Div(
+        children=[
+            html.Div(
+                children=[
+                    html.Label('Use RTH: '),
+                ],
+                style={
+                    'display': 'inline-block',
+                    'margin-right': '0.5%',
+                }
+            ),
+            html.Div(
+                dcc.RadioItems(
+                    id='rth-choice',
+                    options=[
+                        {'label': 'TRUE', 'value': 'True'},
+                        {'label': 'FALSE', 'value': 'False'}
+                    ],
+                    value='True'
+                ),
+                style={
+                    'display': 'inline-block',
+                    'width': '10%'}
+            )
+        ]
+    ),
     html.H4("Enter a currency pair:"),
     html.P(
         children=[
@@ -129,7 +211,6 @@ app.layout = html.Div([
 ])
 
 
-# Callback for what to do when submit-button is pressed
 @app.callback(
     [  # there's more than one output here, so you have to use square brackets to pass it in as an array.
         Output(component_id='currency-output', component_property='children'),
@@ -143,18 +224,18 @@ app.layout = html.Div([
     #   of 'currency-input' at the time the button was pressed DOES get passed in.
     [State('currency-input', 'value'), State('what-to-show', 'value'),
      State('edt-date', 'date'), State('edt-hour', 'value'),
-     State('edt-minute', 'value'), State('edt-second', 'value')]
+     State('edt-minute', 'value'), State('edt-second', 'value'),
+     State('duration-value', 'value'), State('duration-category', 'value'),
+     State('bar-size', 'value'), State('rth-choice', 'value')]
 )
 def update_candlestick_graph(n_clicks, currency_string, what_to_show,
-                             edt_date, edt_hour, edt_minute, edt_second):
+                             edt_date, edt_hour, edt_minute, edt_second,
+                             duration_value, duration_category, bar_size, rth_choice):
     # n_clicks doesn't get used, we only include it for the dependency.
-
     if any([i is None for i in [edt_date, edt_hour, edt_minute, edt_second]]):
         end_date_time = ''
     else:
         end_date_time = f'{edt_date.replace("-", "")} {edt_hour}:{edt_minute}:{edt_second}'
-
-    print(currency_string)
 
     # First things first -- what currency pair history do you want to fetch?
     # Define it as a contract object!
@@ -163,6 +244,16 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     contract.secType = 'CASH'
     contract.exchange = 'IDEALPRO'  # 'IDEALPRO' is the currency exchange.
     contract.currency = currency_string.split(".")[1]
+
+    print("Input:"
+          f"\n\t contract.symbol: {contract.symbol}"
+          f"\n\t contract.currency: {contract.currency}"
+          f"\n\t end_date_time: {end_date_time}"
+          f"\n\t duration: {duration_value} {duration_category}"
+          f"\n\t bar_size:  {bar_size}"
+          f"\n\t what_to_show:  {what_to_show}"
+          f"\n\t rth:  {bool(rth_choice)}"
+          )
 
     ############################################################################
     ############################################################################
@@ -179,10 +270,10 @@ def update_candlestick_graph(n_clicks, currency_string, what_to_show,
     cph = fetch_historical_data(
         contract=contract,
         endDateTime=end_date_time,
-        durationStr='30 D',  # <-- make a reactive input
-        barSizeSetting='1 hour',  # <-- make a reactive input
+        durationStr=f"{duration_value} {duration_category}",  # <-- make a reactive input
+        barSizeSetting=bar_size,  # <-- make a reactive input
         whatToShow=what_to_show,
-        useRTH=True  # <-- make a reactive input
+        useRTH=bool(rth_choice)  # <-- make a reactive input
     )
     # # # Make the candlestick figure
     fig = go.Figure(
